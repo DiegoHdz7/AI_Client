@@ -2,14 +2,11 @@
 import { useState,useEffect, ChangeEvent, FormEvent } from "react";
 import { Form, Button } from "react-bootstrap";
 import CustomNavbar from "@/app/Navbar";
-import { useRouter, useSearchParams } from "next/navigation";
 import Badge from "react-bootstrap/Badge";
 import axios from 'axios';
 
 export default function TumorGradePrediction() {
-  const [data, setData] = useState(null);
   const [prediction,setPrediction] = useState({label:null,predictions:[]});
-  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

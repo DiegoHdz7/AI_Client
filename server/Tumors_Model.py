@@ -1,10 +1,8 @@
 from ucimlrepo import fetch_ucirepo 
 import pandas as pd
-from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import SelectKBest, f_classif
 import tensorflow as tf
-from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from tensorflow.keras.callbacks import EarlyStopping
 import numpy as np
@@ -22,60 +20,40 @@ print(glioma_grading_clinical_and_mutation_features.metadata)
 # variable information 
 print(glioma_grading_clinical_and_mutation_features.variables)
 
-# Assuming df is your DataFrame
+# mapping of Race column to numeric values
 X['Race'] = X['Race'].map({'white': 0, 'black or african american': 1, 'asian': 2})
-
-# If there are NaN values in the 'Race' column, you can fill them with a default value, e.g., -1
 X['Race'] = X['Race'].fillna(-1).astype(int)
 
-# Print the updated DataFrame
-print(X)
-print(y)
-
-# Split the data into training and testing sets
+# training and testing sets splitting
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-# Select the top 10 features based on ANOVA F-statistic
+
+# Top-20 feature selection
 k_best = SelectKBest(score_func=f_classif, k=20)
 X_train_selected = k_best.fit_transform(X_train, y_train)
-X_test_selected = k_best.transform(X_test)  # Use the same k_best for transforming the test data
+X_test_selected = k_best.transform(X_test)  
 
-
-print(y_test['Grade'].value_counts())
-# Assuming X_train has column names
 selected_feature_indices = k_best.get_support(indices=True)
 selected_feature_names = X_train.columns[selected_feature_indices]
 
-#Getting only wanted feature columns
 X_train_selected = X_train[selected_feature_names]
 X_test_selected = X_test[selected_feature_names]
-
-print("Selected Feature Names:")
-print(selected_feature_names)
-
-print("Selected Feature Indices:")
-print(selected_feature_indices)
 
 # Number of selected features
 num_selected_features = len(selected_feature_indices)
 
-# Create scaler
+# Scaling
 minmax_scale = preprocessing.MinMaxScaler(feature_range=(0, 1))
-
-# Scale feature
 X_train_selected_scaled = minmax_scale.fit_transform(X_train_selected) 
 X_test_selected_scaled = minmax_scale.fit_transform(X_test_selected) 
 
-# Build neural network using a sequential model
+# Building neural network using a sequential model
 model = tf.keras.models.Sequential([
-    # Add the input and first hidden layer
     tf.keras.layers.Dense(30, input_shape=(num_selected_features,), activation="sigmoid"),
-    # Add the second hidden layer
     tf.keras.layers.Dense(15, activation="sigmoid"),
-    # Add the output layer with the correct number of nodes
     tf.keras.layers.Dense(2, activation="softmax")
 ])
 
-# Compile the model with the correct output layer and loss function
+# Compailing and optomization
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 model.compile(
     optimizer=optimizer,
@@ -83,7 +61,6 @@ model.compile(
     metrics=['accuracy']
 )
 
-# Print the model summary
 model.summary()
 
 X_train_selected_scaled_df = pd.DataFrame(X_train_selected_scaled, columns=selected_feature_names)
@@ -91,16 +68,13 @@ X_test_selected_scaled_df = pd.DataFrame(X_test_selected_scaled, columns=selecte
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
 model.fit(X_train_selected, y_train, epochs=5000, validation_data=(X_test_selected, y_test), callbacks=[early_stopping])
-#model.fit(X_train_selected, y_train, epochs=5000) #5000
 
-
-
-# Evaluate the model on the test data using evaluate
+# Evaluation
 print("Evaluate on test data")
 results = model.evaluate(X_test_selected, y_test)
 print("test loss, test acc:", results)
 
-#Saving the model
+# Model Saving
 import os
 path = os.path.dirname(os.path.realpath(__file__))
 print("current directory:", path)
