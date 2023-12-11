@@ -12,6 +12,8 @@ const CustomNavbar: React.FC = () => {
                 <Nav.Link href="/">Home</Nav.Link>
                 <Nav.Link href="/breast-cancer">Breast Cancer Diagnosis</Nav.Link>
                 <Nav.Link href="/tumor-grades">Tumor Grade Diagnosis</Nav.Link>
+                <Nav.Link href="/predictions-cancer">Breast Cancer Predictions</Nav.Link>
+                <Nav.Link href="/predictions-tumors">Tumor Grade Diagnosis Pred</Nav.Link>
               </Nav>
             </Navbar.Collapse>
           </Container>
